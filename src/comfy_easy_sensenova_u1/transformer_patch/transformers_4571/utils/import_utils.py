@@ -99,14 +99,16 @@ def _is_package_available(pkg_name: str, return_version: bool = False) -> Union[
 ENV_VARS_TRUE_VALUES = {"1", "ON", "YES", "TRUE"}
 ENV_VARS_TRUE_AND_AUTO_VALUES = ENV_VARS_TRUE_VALUES.union({"AUTO"})
 
-USE_TF = os.environ.get("USE_TF", "AUTO").upper()
+# SenseNova-U1 is a PyTorch-only runtime. Do not let an unrelated TensorFlow
+# installation become an implicit dependency of this private Transformers copy.
+USE_TF = "0"
 USE_TORCH = os.environ.get("USE_TORCH", "AUTO").upper()
 USE_JAX = os.environ.get("USE_FLAX", "AUTO").upper()
 
 # Try to run a native pytorch job in an environment with TorchXLA installed by setting this value to 0.
 USE_TORCH_XLA = os.environ.get("USE_TORCH_XLA", "1").upper()
 
-FORCE_TF_AVAILABLE = os.environ.get("FORCE_TF_AVAILABLE", "AUTO").upper()
+FORCE_TF_AVAILABLE = "0"
 
 # `transformers` requires `torch>=1.11` but this variable is exposed publicly, and we can't simply remove it.
 # This is the version of torch required to run torch.fx features and torch.onnx with dictionary inputs.
