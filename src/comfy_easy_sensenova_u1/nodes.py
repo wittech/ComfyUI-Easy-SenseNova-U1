@@ -21,6 +21,7 @@ from .progress import (
     TokenInferenceProgress,
     throw_if_interrupted,
 )
+from .reference_images import extend_reference_images
 from .runtime import (
     ATTENTION_BACKENDS,
     CFG_NORMS,
@@ -548,6 +549,29 @@ class ComfyEasySenseNovaLoader:
         return patcher, make_pixel_vae(), json.dumps(info, ensure_ascii=False, indent=2)
 
 
+class ComfyEasySenseNovaReferenceImages:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": ("IMAGE", ui("追加图像", "本节点会按 IMAGE 批次顺序追加全部图片，并保留每个节点输入的独立尺寸。")),
+            },
+            "optional": {
+                "reference_images": ("SENSENOVA_REFERENCE_IMAGES", ui("已有参考图", "连接上一个 SenseNova Reference Images，按节点顺序继续追加。")),
+            },
+        }
+
+    RETURN_TYPES = ("SENSENOVA_REFERENCE_IMAGES",)
+    RETURN_NAMES = ("参考图列表",)
+    FUNCTION = "append"
+    CATEGORY = NATIVE_CATEGORY
+    DESCRIPTION = "串联收集任意数量、不同尺寸的 SenseNova 参考图；最后连接 SenseNova Conditioning 的参考图列表输入。"
+
+    def append(self, image, reference_images=None):
+        images = comfy_to_pil_batch(image)
+        return (extend_reference_images(reference_images, images),)
+
+
 class ComfyEasySenseNovaConditioning:
     @classmethod
     def INPUT_TYPES(cls):
@@ -559,7 +583,8 @@ class ComfyEasySenseNovaConditioning:
                 "max_think_tokens": ("INT", ui("最大思考 token", "思考模式的最大生成长度。", default=1024, min=1, max=8192, step=1)),
             },
             "optional": {
-                "image": ("IMAGE", ui("参考图像", "可选；批次中的图片作为多图参考，不经过像素 VAE。")),
+                "image": ("IMAGE", ui("参考图像批次", "兼容旧工作流；批次中的图片作为多图参考。不能与参考图列表同时连接。")),
+                "reference_images": ("SENSENOVA_REFERENCE_IMAGES", ui("参考图列表", "连接 SenseNova Reference Images；保留每张参考图的独立尺寸。")),
             },
         }
 
@@ -569,12 +594,18 @@ class ComfyEasySenseNovaConditioning:
     CATEGORY = NATIVE_CATEGORY
     DESCRIPTION = "构造不可拼接的 SenseNova KV 条件；尺寸和批量从实际像素 latent 自动推导，因此可直接复用空 HiDream-O1 潜空间图像。"
 
-    def encode(self, model, prompt, think_mode, max_think_tokens, image=None):
+    def encode(self, model, prompt, think_mode, max_think_tokens, image=None, reference_images=None):
         if not isinstance(model.model, SenseNovaComfyModel):
             raise TypeError("SenseNova Conditioning 只能连接 SenseNova Loader 输出的 MODEL。")
         if not prompt.strip():
             raise ValueError("提示词不能为空。")
-        return conditioning_from_prompt(prompt, image, think_mode, max_think_tokens)
+        return conditioning_from_prompt(
+            prompt,
+            image,
+            think_mode,
+            max_think_tokens,
+            reference_images=reference_images,
+        )
 
 
 class ComfyEasySenseNovaSamplingPatch:
@@ -703,6 +734,7 @@ NODE_CLASS_MAPPINGS = {
     "ComfyEasySenseNovaVisionQA": ComfyEasySenseNovaVisionQA,
     "ComfyEasySenseNovaInterleave": ComfyEasySenseNovaInterleave,
     "ComfyEasySenseNovaLoader": ComfyEasySenseNovaLoader,
+    "ComfyEasySenseNovaReferenceImages": ComfyEasySenseNovaReferenceImages,
     "ComfyEasySenseNovaConditioning": ComfyEasySenseNovaConditioning,
     "ComfyEasySenseNovaSamplingPatch": ComfyEasySenseNovaSamplingPatch,
     "ComfyEasySenseNovaScheduler": ComfyEasySenseNovaScheduler,
@@ -719,6 +751,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ComfyEasySenseNovaVisionQA": "SenseNova-U1 视觉问答 (Legacy)",
     "ComfyEasySenseNovaInterleave": "SenseNova-U1 图文交错生成 (Legacy)",
     "ComfyEasySenseNovaLoader": "SenseNova Loader",
+    "ComfyEasySenseNovaReferenceImages": "SenseNova Reference Images",
     "ComfyEasySenseNovaConditioning": "SenseNova Conditioning",
     "ComfyEasySenseNovaSamplingPatch": "SenseNova Sampling Patch",
     "ComfyEasySenseNovaScheduler": "SenseNova Scheduler",

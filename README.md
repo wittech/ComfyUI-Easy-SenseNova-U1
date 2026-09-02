@@ -30,6 +30,7 @@ git clone https://github.com/eastmoe/ComfyUI-Easy-SenseNova-U1
 | 节点 | 作用 |
 |------|------|
 | SenseNova Loader | 从 checkpoint 输出标准 `MODEL` 和 HiDream-O1 同类的像素空间 `VAE`。显存模式分 `full` / `balanced` / `low`，`balanced` / `low` 走原生逐层卸载，24GB 显卡推荐 `balanced` |
+| SenseNova Reference Images | 可串联追加任意数量的参考图，保留每张图各自的尺寸和宽高比，输出专用参考图列表 |
 | SenseNova Conditioning | 输出正面、仅图像、无条件三路 `CONDITIONING`。图片可选输入，Think Mode 在首次前向时建立原生 DynamicCache，宽高和批量从实际 latent 推导 |
 | SenseNova Sampling Patch | 设置原生 flow timestep shift、动态分辨率 noise scale、CFG 区间与 patch-space CFG 归一化 |
 | SenseNova Scheduler | 输出与原项目完全相同的时间步，推荐接 Euler |
@@ -38,6 +39,25 @@ git clone https://github.com/eastmoe/ComfyUI-Easy-SenseNova-U1
 | SenseNova Think Text | 采样完成后读取 Think Mode 的思考文本 |
 
 空 latent 用 ComfyUI 自带的空 HiDream-O1 潜空间图像，解码用 Loader 输出的像素空间 VAE。
+
+多参考图编辑推荐串联 `SenseNova Reference Images`：
+
+```text
+Load Image 1 ─→ Reference Images #1 ─┐
+                                     ├─→ Reference Images #2 ─→ Conditioning.reference_images
+Load Image 2 ────────────────────────┘
+```
+
+串联顺序就是模型看到的 `Image-1`、`Image-2` 顺序。单个收集节点也可接收一个 `IMAGE` 批次，批次内所有图片会依次追加。`Conditioning.image` 继续兼容旧工作流，但它会使用统一尺寸的 ComfyUI 图像批次，且不能与 `reference_images` 同时连接。
+
+需要明确每张参考图的用途时，可在提示词中按同一顺序标注：
+
+```text
+Image-1:<image>
+Image-2:<image>
+
+保留 Image-1 的人物身份和姿态，采用 Image-2 的服装设计与配色。
+```
 
 ### 集成节点
 
