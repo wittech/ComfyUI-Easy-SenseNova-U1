@@ -30,6 +30,7 @@ git clone https://github.com/eastmoe/ComfyUI-Easy-SenseNova-U1
 | 节点 | 作用 |
 |------|------|
 | SenseNova Loader | 从 checkpoint 输出标准 `MODEL` 和 HiDream-O1 同类的像素空间 `VAE`。显存模式分 `full` / `balanced` / `low`，`balanced` / `low` 走原生逐层卸载，24GB 显卡推荐 `balanced` |
+| SenseNova Guided Edit Prompt | 在一个节点内生成框选文字风格重塑、局部文字替换、标记引导风格改造三类严格编辑提示词 |
 | SenseNova Conditioning | 直接接收 0–10 张独立参考图并输出正面、仅图像、无条件三路 `CONDITIONING`。Think Mode 在首次前向时建立原生 DynamicCache，宽高和批量从实际 latent 推导 |
 | SenseNova Sampling Patch | 设置原生 flow timestep shift、动态分辨率 noise scale、CFG 区间与 patch-space CFG 归一化 |
 | SenseNova Scheduler | 输出与原项目完全相同的时间步，推荐接 Euler |
@@ -113,14 +114,15 @@ python tools/quantize_checkpoint.py \
 
 ## 示例工作流
 
-`workflows/` 下有两个示例：
+`workflows/` 下有三个示例：
 
 - `Sensenova 图像生成.json`：文生图，Loader → LoRA → Sampling Patch → Conditioning → CFGGuider → SamplerCustomAdvanced 的完整组合
 - `Sensenova 图像编辑.json`：图像编辑，用 DualGuider 做编辑引导，参考图从 LoadImage 进入
+- `SenseNova 引导式局部编辑.json`：把框选文字风格重塑、局部文字替换和标记引导高端复古改造融合到一个三模式工作流；图片直接进入 `Conditioning.Image-1`。字段预设和使用说明见 [`docs/guided-edit-workflow_CN.md`](docs/guided-edit-workflow_CN.md)
 
 打开方式：把 json 拖进 ComfyUI 画布，或 Workflow → Open 选文件。
 
-两个工作流引用了示例环境的模型文件，打开后按自己机器重新选择 CheckPoint 和加速 Lora；图像编辑工作流需要给 LoadImage 上传一张参考图。
+工作流引用了示例环境的模型文件，打开后按自己机器重新选择 CheckPoint；使用 8-step 工作流时还需重新选择加速 Lora。图像编辑工作流需要给 LoadImage 上传一张参考图。
 
 ## 原项目
 
