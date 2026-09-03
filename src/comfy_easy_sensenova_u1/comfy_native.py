@@ -26,11 +26,10 @@ import comfy.samplers
 import comfy.sd
 import comfy.supported_models_base
 
-from .runtime import SenseNovaHandle, comfy_to_pil_batch
+from .runtime import SenseNovaHandle
 from .checkpoint_assets import materialize_checkpoint_assets
 from .paths import comfy_root
 from .progress import ThinkingInferenceProgress
-from .reference_images import SenseNovaReferenceImages, resolve_reference_images
 
 
 IMG_START_TOKEN = "<img>"
@@ -98,13 +97,11 @@ class SenseNovaBranchSpec:
 
 def conditioning_from_prompt(
     prompt: str,
-    image: torch.Tensor | None,
+    images: list[Any] | None,
     think_mode: bool,
     max_think_tokens: int,
-    reference_images: SenseNovaReferenceImages | None = None,
 ) -> tuple[list, list, list, SenseNovaConditionBundle]:
-    legacy_images = comfy_to_pil_batch(image) if image is not None else None
-    images = resolve_reference_images(legacy_images, reference_images)
+    images = list(images) if images is not None else []
     if images and prompt.count("<image>") > len(images):
         raise ValueError("提示词中的 <image> 数量不能超过参考图像数量。")
     bundle = SenseNovaConditionBundle(
