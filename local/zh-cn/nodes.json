@@ -17,6 +17,16 @@
     "height": {"display_name": "图像高度", "tooltip": "自由设置图像高度，必须为 32 的倍数。"}
   },
   "nodes": {
+    "ComfyEasySenseNovaAnnotationCanvas": {
+      "display_name": "SenseNova 标注画布",
+      "inputs": {
+        "image": {"display_name": "输入图片", "tooltip": "选择或上传图片，然后直接在节点画布上添加定位框、箭头、自由笔迹和文字。"},
+        "annotation_data": {"display_name": "标注数据", "tooltip": "由节点画布自动维护，无需手动编辑。"}
+      },
+      "outputs": {
+        "标注图像": {"display_name": "标注图像"}
+      }
+    },
     "ComfyEasySenseNovaDownloadModel": {
       "display_name": "SenseNova-U1 模型下载 (Legacy)",
       "inputs": {

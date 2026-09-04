@@ -42,44 +42,26 @@ class GuidedEditWorkflowTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.workflow = json.loads(WORKFLOW_PATH.read_text(encoding="utf-8"))
 
-    def test_painter_sits_between_load_image_and_conditioning_image_one(self) -> None:
-        load_image = node_by_type(self.workflow, "LoadImage")
-        painter = node_by_type(self.workflow, "PainterNode")
+    def test_native_annotation_canvas_feeds_conditioning_image_one_directly(self) -> None:
+        annotation = node_by_type(
+            self.workflow, "ComfyEasySenseNovaAnnotationCanvas"
+        )
         conditioning = node_by_type(self.workflow, "ComfyEasySenseNovaConditioning")
 
         self.assertEqual(
-            source_node_for_input(self.workflow, painter, "images")["id"],
-            load_image["id"],
-        )
-        self.assertEqual(
             source_node_for_input(self.workflow, conditioning, "Image-1")["id"],
-            painter["id"],
+            annotation["id"],
         )
+        self.assertEqual([item["type"] for item in annotation["outputs"]], ["IMAGE"])
         conditioning_inputs = {item["name"] for item in conditioning["inputs"]}
         self.assertNotIn("image", conditioning_inputs)
         self.assertNotIn("reference_images", conditioning_inputs)
 
-    def test_painter_node_has_verified_schema_and_manager_metadata(self) -> None:
-        painter = node_by_type(self.workflow, "PainterNode")
+    def test_workflow_has_no_external_painter_or_extra_load_image(self) -> None:
+        node_types = {node.get("type") for node in self.workflow["nodes"]}
 
-        self.assertEqual(
-            [item["name"] for item in painter["inputs"]],
-            ["image", "images", "update_node"],
-        )
-        self.assertEqual(
-            [item["type"] for item in painter["outputs"]],
-            ["IMAGE", "MASK"],
-        )
-        self.assertEqual(
-            painter["properties"]["cnr_id"], "comfyui_custom_nodes_alekpet"
-        )
-        self.assertEqual(painter["properties"]["ver"], "1.1.9")
-        self.assertEqual(painter["widgets_values"][0], f"Paint_{painter['id']}.png")
-
-        settings = painter["widgets_values"][3]["settings"]
-        self.assertTrue(settings["pipingSettings"]["pipingChangeSize"])
-        self.assertTrue(settings["pipingSettings"]["pipingUpdateImage"])
-        self.assertEqual(settings["pipingSettings"]["action"]["name"], "background")
+        self.assertNotIn("PainterNode", node_types)
+        self.assertNotIn("LoadImage", node_types)
 
     def test_three_complete_prompt_templates_are_visible_as_core_nodes(self) -> None:
         templates = [
@@ -149,22 +131,28 @@ class GuidedEditWorkflowTest(unittest.TestCase):
 
 
 class GuidedEditDocumentationTest(unittest.TestCase):
-    def test_guide_explains_painter_workflow_and_complete_templates(self) -> None:
+    def test_guide_explains_native_canvas_and_complete_templates(self) -> None:
         guide = GUIDE_PATH.read_text(encoding="utf-8")
 
-        self.assertIn("AlekPet PainterNode", guide)
-        self.assertIn("https://github.com/AlekPet/ComfyUI_Custom_Nodes_AlekPet", guide)
-        self.assertIn("Load Image → Painter Node → Conditioning.Image-1", guide)
-        self.assertIn("第一次", guide)
+        self.assertIn("SenseNova Annotation Canvas", guide)
+        self.assertIn("Annotation Canvas → Conditioning.Image-1", guide)
+        self.assertIn("矩形", guide)
+        self.assertIn("椭圆", guide)
+        self.assertIn("箭头", guide)
+        self.assertIn("自由画笔", guide)
+        self.assertIn("文字", guide)
+        self.assertIn("撤销", guide)
+        self.assertNotIn("AlekPet", guide)
         self.assertIn("三段完整提示词", guide)
         self.assertNotIn("edit_target", guide)
         self.assertNotIn("SenseNova Guided Edit Prompt", guide)
 
-    def test_readme_lists_painter_dependency_not_removed_custom_node(self) -> None:
+    def test_readme_lists_native_canvas_without_external_dependency(self) -> None:
         readme = README_PATH.read_text(encoding="utf-8")
 
-        self.assertIn("AlekPet Painter Node", readme)
+        self.assertIn("SenseNova Annotation Canvas", readme)
         self.assertIn("PrimitiveStringMultiline", readme)
+        self.assertNotIn("AlekPet", readme)
         self.assertNotIn("SenseNova Guided Edit Prompt", readme)
 
 

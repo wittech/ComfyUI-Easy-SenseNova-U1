@@ -2,16 +2,20 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import torch
+from PIL import Image
 from safetensors import SafetensorError, safe_open
 
 import comfy.model_management as mm
 import folder_paths
 
+from .annotation_canvas import compose_annotation
 from .checkpoint_assets import ASSETS_FORMAT, ASSETS_FORMAT_KEY
 from .download import FILE_VERIFICATIONS, OFFICIAL_REPOS, download_snapshot
 from .paths import available_models, resolve_model_path
@@ -600,6 +604,73 @@ class ComfyEasySenseNovaConditioning:
         )
 
 
+class ComfyEasySenseNovaAnnotationCanvas:
+    """加载图片，并把前端编辑器保存的透明标注层合成为单张参考图。"""
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        input_dir = folder_paths.get_input_directory()
+        files = []
+        for root, _, names in os.walk(input_dir):
+            for name in names:
+                path = os.path.join(root, name)
+                if os.path.isfile(path):
+                    files.append(os.path.relpath(path, input_dir))
+        if hasattr(folder_paths, "filter_files_content_types"):
+            files = folder_paths.filter_files_content_types(files, ["image"])
+        return {
+            "required": {
+                "image": (
+                    sorted(files),
+                    ui(
+                        "输入图片",
+                        "选择或上传图片，然后直接在节点画布上添加定位框、箭头、自由笔迹和文字。",
+                        image_upload=True,
+                    ),
+                ),
+                "annotation_data": (
+                    "STRING",
+                    ui(
+                        "标注数据",
+                        "由节点画布自动维护的矢量状态与透明 PNG 覆盖层。",
+                        default="",
+                        multiline=True,
+                    ),
+                ),
+            }
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    RETURN_NAMES = ("标注图像",)
+    FUNCTION = "annotate"
+    CATEGORY = NATIVE_CATEGORY
+    DESCRIPTION = "在上传图片上直接画矩形、椭圆、箭头、自由笔迹和文字，并输出已栅格化标注的单张 IMAGE。"
+
+    def annotate(self, image, annotation_data=""):
+        image_path = folder_paths.get_annotated_filepath(image)
+        with Image.open(image_path) as opened:
+            source = opened.copy()
+        composite = compose_annotation(source, annotation_data, image)
+        array = np.array(composite, dtype=np.float32, copy=True) / 255.0
+        return (torch.from_numpy(array)[None, ...],)
+
+    @classmethod
+    def IS_CHANGED(cls, image, annotation_data=""):
+        image_path = folder_paths.get_annotated_filepath(image)
+        digest = hashlib.sha256()
+        with open(image_path, "rb") as source_file:
+            for chunk in iter(lambda: source_file.read(1024 * 1024), b""):
+                digest.update(chunk)
+        digest.update(annotation_data.encode("utf-8"))
+        return digest.hexdigest()
+
+    @classmethod
+    def VALIDATE_INPUTS(cls, image, annotation_data=""):
+        if not image or not folder_paths.exists_annotated_filepath(image):
+            return f"找不到输入图片：{image}"
+        return True
+
+
 class ComfyEasySenseNovaSamplingPatch:
     @classmethod
     def INPUT_TYPES(cls):
@@ -726,6 +797,7 @@ NODE_CLASS_MAPPINGS = {
     "ComfyEasySenseNovaVisionQA": ComfyEasySenseNovaVisionQA,
     "ComfyEasySenseNovaInterleave": ComfyEasySenseNovaInterleave,
     "ComfyEasySenseNovaLoader": ComfyEasySenseNovaLoader,
+    "ComfyEasySenseNovaAnnotationCanvas": ComfyEasySenseNovaAnnotationCanvas,
     "ComfyEasySenseNovaConditioning": ComfyEasySenseNovaConditioning,
     "ComfyEasySenseNovaSamplingPatch": ComfyEasySenseNovaSamplingPatch,
     "ComfyEasySenseNovaScheduler": ComfyEasySenseNovaScheduler,
@@ -742,6 +814,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ComfyEasySenseNovaVisionQA": "SenseNova-U1 视觉问答 (Legacy)",
     "ComfyEasySenseNovaInterleave": "SenseNova-U1 图文交错生成 (Legacy)",
     "ComfyEasySenseNovaLoader": "SenseNova Loader",
+    "ComfyEasySenseNovaAnnotationCanvas": "SenseNova Annotation Canvas",
     "ComfyEasySenseNovaConditioning": "SenseNova Conditioning",
     "ComfyEasySenseNovaSamplingPatch": "SenseNova Sampling Patch",
     "ComfyEasySenseNovaScheduler": "SenseNova Scheduler",

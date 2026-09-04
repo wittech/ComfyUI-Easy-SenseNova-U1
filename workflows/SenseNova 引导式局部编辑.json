@@ -5,60 +5,6 @@
   "last_link_id": 18,
   "nodes": [
     {
-      "id": 1,
-      "type": "LoadImage",
-      "pos": [
-        20,
-        80
-      ],
-      "size": [
-        360,
-        420
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "image",
-          "type": "COMBO",
-          "widget": {
-            "name": "image"
-          },
-          "link": null
-        },
-        {
-          "name": "upload",
-          "type": "IMAGEUPLOAD",
-          "widget": {
-            "name": "upload"
-          },
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            3
-          ]
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LoadImage"
-      },
-      "widgets_values": [
-        "example.png",
-        "image"
-      ]
-    },
-    {
       "id": 2,
       "type": "ComfyEasySenseNovaLoader",
       "pos": [
@@ -748,17 +694,17 @@
     },
     {
       "id": 14,
-      "type": "PainterNode",
+      "type": "ComfyEasySenseNovaAnnotationCanvas",
       "pos": [
-        430,
+        20,
         80
       ],
       "size": [
-        650,
-        780
+        1040,
+        980
       ],
       "flags": {},
-      "order": 5,
+      "order": 3,
       "mode": 0,
       "inputs": [
         {
@@ -770,16 +716,18 @@
           "link": null
         },
         {
-          "name": "images",
-          "type": "IMAGE",
-          "shape": 7,
-          "link": 3
+          "name": "annotation_data",
+          "type": "STRING",
+          "widget": {
+            "name": "annotation_data"
+          },
+          "link": null
         },
         {
-          "name": "update_node",
-          "type": "BOOLEAN",
+          "name": "upload",
+          "type": "IMAGEUPLOAD",
           "widget": {
-            "name": "update_node"
+            "name": "upload"
           },
           "link": null
         }
@@ -791,54 +739,16 @@
           "links": [
             18
           ]
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
         }
       ],
-      "title": "AlekPet Painter Node｜直接画框、线条、文字标注",
+      "title": "SenseNova Annotation Canvas｜上传并直接标注",
       "properties": {
-        "cnr_id": "comfyui_custom_nodes_alekpet",
-        "ver": "1.1.9",
-        "Node name for S&R": "PainterNode"
+        "Node name for S&R": "ComfyEasySenseNovaAnnotationCanvas"
       },
       "widgets_values": [
-        "Paint_14.png",
-        true,
-        "clear_painer",
-        {
-          "undo_history": [],
-          "redo_history": [],
-          "canvas_settings": {
-            "version": "5.3.0",
-            "objects": [],
-            "background": "#000000"
-          },
-          "settings": {
-            "saveImage": true,
-            "pipingSettings": {
-              "action": {
-                "name": "background",
-                "options": {
-                  "sendToBack": true,
-                  "scale": 1
-                }
-              },
-              "pipingChangeSize": true,
-              "pipingUpdateImage": true
-            },
-            "currentCanvasSize": {
-              "width": 512,
-              "height": 512
-            },
-            "mypaint_settings": {
-              "preset_brush_size": true,
-              "preset_brush_color": false
-            }
-          }
-        }
+        "example.png",
+        "",
+        "image"
       ]
     },
     {
@@ -940,14 +850,6 @@
       4,
       2,
       "STRING"
-    ],
-    [
-      3,
-      1,
-      0,
-      14,
-      1,
-      "IMAGE"
     ],
     [
       4,
@@ -1073,33 +975,20 @@
   "groups": [
     {
       "id": 1,
-      "title": "1. 上传图片；第一次运行会把图片送进 Painter Node",
+      "title": "1. 在 Annotation Canvas 上传图片并直接画框、箭头或文字",
       "bounding": [
         0,
         20,
-        400,
-        520
+        1090,
+        1060
       ],
       "color": "#3f789e",
       "font_size": 24,
       "flags": {}
     },
     {
-      "id": 2,
-      "title": "2. 在 Painter Node 里直接画框、线条或文字标注",
-      "bounding": [
-        410,
-        20,
-        690,
-        870
-      ],
-      "color": "#8a6d3b",
-      "font_size": 24,
-      "flags": {}
-    },
-    {
       "id": 3,
-      "title": "3. 三段完整 Prompt 模板；把需要的一条连到 Conditioning.prompt",
+      "title": "2. 三段完整 Prompt 模板；把需要的一条连到 Conditioning.prompt",
       "bounding": [
         1110,
         20,
@@ -1112,7 +1001,7 @@
     },
     {
       "id": 4,
-      "title": "4. SenseNova-U1.5 官方 50 步图像编辑链",
+      "title": "3. SenseNova-U1.5 官方 50 步图像编辑链",
       "bounding": [
         1890,
         20,
