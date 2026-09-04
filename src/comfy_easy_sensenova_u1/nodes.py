@@ -14,7 +14,6 @@ import folder_paths
 
 from .checkpoint_assets import ASSETS_FORMAT, ASSETS_FORMAT_KEY
 from .download import FILE_VERIFICATIONS, OFFICIAL_REPOS, download_snapshot
-from .guided_edit import GUIDED_EDIT_MODES, build_guided_edit_prompt
 from .paths import available_models, resolve_model_path
 from .progress import (
     DiffusionInferenceProgress,
@@ -549,92 +548,6 @@ class ComfyEasySenseNovaLoader:
         return patcher, make_pixel_vae(), json.dumps(info, ensure_ascii=False, indent=2)
 
 
-class ComfyEasySenseNovaGuidedEditPrompt:
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "mode": (
-                    list(GUIDED_EDIT_MODES),
-                    ui(
-                        "编辑模式", "选择框选文字重塑、局部文字替换或标记引导风格改造。"
-                    ),
-                ),
-                "edit_target": (
-                    "STRING",
-                    ui(
-                        "编辑目标",
-                        "说明要修改的区域或对象；框线和箭头本身应已画在 Image-1 中。",
-                        multiline=True,
-                        default="红色定位框内的大号白色文字",
-                    ),
-                ),
-                "original_text": (
-                    "STRING",
-                    ui(
-                        "原文字",
-                        "文字重塑时填写必须保留的文字；文字替换时填写要被替换的原文。",
-                        multiline=True,
-                        default="BLOCK\nHOUSEHOLD\nNOISE",
-                    ),
-                ),
-                "replacement_text": (
-                    "STRING",
-                    ui(
-                        "替换后文字",
-                        "仅局部文字替换模式使用；其他模式可以留空。",
-                        multiline=True,
-                        default="",
-                    ),
-                ),
-                "style_goal": (
-                    "STRING",
-                    ui(
-                        "风格目标",
-                        "文字重塑的字形风格，或标记引导改造的整体审美方向。",
-                        multiline=True,
-                        default="复古海报式字体；加入旧化印刷、轻微噪点、磨损墨边、轻微褪色，以及融入字形的撕纸纹理；匹配原海报的黑白单色设计。",
-                    ),
-                ),
-                "preserve": (
-                    "STRING",
-                    ui(
-                        "保留要求",
-                        "明确说明禁止变化的区域和属性；留空时使用通用保留约束。",
-                        multiline=True,
-                        default="保持其他耳机、图标、图示和周围文字不变。",
-                    ),
-                ),
-            }
-        }
-
-    RETURN_TYPES = ("STRING",)
-    RETURN_NAMES = ("编辑提示词",)
-    FUNCTION = "build"
-    CATEGORY = NATIVE_CATEGORY
-    DESCRIPTION = "为框选文字重塑、局部文字替换和标记引导风格改造生成严格编辑指令。"
-
-    def build(
-        self,
-        mode,
-        edit_target,
-        original_text,
-        replacement_text,
-        style_goal,
-        preserve,
-    ):
-        return (
-            build_guided_edit_prompt(
-                mode=mode,
-                edit_target=edit_target,
-                original_text=original_text,
-                replacement_text=replacement_text,
-                style_goal=style_goal,
-                preserve=preserve,
-            ),
-        )
-
-
 class ComfyEasySenseNovaConditioning:
     @classmethod
     def INPUT_TYPES(cls):
@@ -813,7 +726,6 @@ NODE_CLASS_MAPPINGS = {
     "ComfyEasySenseNovaVisionQA": ComfyEasySenseNovaVisionQA,
     "ComfyEasySenseNovaInterleave": ComfyEasySenseNovaInterleave,
     "ComfyEasySenseNovaLoader": ComfyEasySenseNovaLoader,
-    "ComfyEasySenseNovaGuidedEditPrompt": ComfyEasySenseNovaGuidedEditPrompt,
     "ComfyEasySenseNovaConditioning": ComfyEasySenseNovaConditioning,
     "ComfyEasySenseNovaSamplingPatch": ComfyEasySenseNovaSamplingPatch,
     "ComfyEasySenseNovaScheduler": ComfyEasySenseNovaScheduler,
@@ -830,7 +742,6 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ComfyEasySenseNovaVisionQA": "SenseNova-U1 视觉问答 (Legacy)",
     "ComfyEasySenseNovaInterleave": "SenseNova-U1 图文交错生成 (Legacy)",
     "ComfyEasySenseNovaLoader": "SenseNova Loader",
-    "ComfyEasySenseNovaGuidedEditPrompt": "SenseNova Guided Edit Prompt",
     "ComfyEasySenseNovaConditioning": "SenseNova Conditioning",
     "ComfyEasySenseNovaSamplingPatch": "SenseNova Sampling Patch",
     "ComfyEasySenseNovaScheduler": "SenseNova Scheduler",
