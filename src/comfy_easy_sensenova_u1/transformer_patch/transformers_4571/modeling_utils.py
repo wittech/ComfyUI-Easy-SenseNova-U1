@@ -2965,23 +2965,23 @@ class PreTrainedModel(nn.Module, EmbeddingAccessMixin, ModuleUtilsMixin, PushToH
         `torch.nn.init` functions (which are all no_grad by default), but simply do in-place ops such as
         `module.weight.data.zero_()`.
         """
-        if not hasattr(torch.nn.Module, "smart_apply"):
-            # This function is equivalent to `torch.nn.Module.apply`, except that it dynamically adjust the function
-            # to apply as we go down the graph
-            def smart_apply(self, fn):
-                for module in self.children():
-                    # We found a sub-model: recursively dispatch its own init function now!
-                    if isinstance(module, PreTrainedModel):
-                        module.smart_apply(module._initialize_weights)
-                    else:
-                        module.smart_apply(fn)
-                fn(self)
-                return self
+        # Keep this helper private to the vendored Transformers runtime. ComfyUI
+        # loads custom nodes into one process, where a different Transformers
+        # version may have installed an incompatible Module.smart_apply method.
+        def smart_apply(module, fn):
+            # This function is equivalent to `torch.nn.Module.apply`, except that it dynamically adjusts the function
+            # to apply as we go down the graph.
+            for child in module.children():
+                # We found a sub-model: recursively dispatch its own init function now!
+                if isinstance(child, PreTrainedModel):
+                    smart_apply(child, child._initialize_weights)
+                else:
+                    smart_apply(child, fn)
+            fn(module)
+            return module
 
-            torch.nn.Module.smart_apply = smart_apply
-
-        # Let the magic happen with this simple call
-        self.smart_apply(self._initialize_weights)
+        # Let the magic happen without mutating the global torch.nn.Module class.
+        smart_apply(self, self._initialize_weights)
 
     def tie_embeddings_and_encoder_decoder(self):
         """
