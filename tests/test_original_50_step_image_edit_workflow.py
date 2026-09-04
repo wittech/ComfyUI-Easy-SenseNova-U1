@@ -50,6 +50,7 @@ class OriginalFiftyStepImageEditWorkflowTest(unittest.TestCase):
                 "PrimitiveStringMultiline",
                 "ComfyEasySenseNovaLoader",
                 "ComfyEasySenseNovaConditioning",
+                "ComfyEasySenseNovaEditResolution",
                 "ComfyEasySenseNovaSamplingPatch",
                 "RandomNoise",
                 "ComfyEasySenseNovaDualGuider",
@@ -68,11 +69,15 @@ class OriginalFiftyStepImageEditWorkflowTest(unittest.TestCase):
         guider = node_by_type(self.workflow, "ComfyEasySenseNovaDualGuider")
         sampler = node_by_type(self.workflow, "KSamplerSelect")
         scheduler = node_by_type(self.workflow, "ComfyEasySenseNovaScheduler")
+        conditioning = node_by_type(
+            self.workflow, "ComfyEasySenseNovaConditioning"
+        )
 
         self.assertEqual(patch["widgets_values"], [3.0, "none", 0.0, 1.0])
         self.assertEqual(guider["widgets_values"], [4.0, 1.0])
         self.assertEqual(sampler["widgets_values"], ["euler"])
         self.assertEqual(scheduler["widgets_values"], [50, 3.0])
+        self.assertEqual(conditioning["widgets_values"], ["", False, 1024])
 
     def test_image_and_full_prompt_feed_conditioning_directly(self) -> None:
         conditioning = node_by_type(
@@ -92,6 +97,35 @@ class OriginalFiftyStepImageEditWorkflowTest(unittest.TestCase):
         self.assertGreaterEqual(prompt.count("【填写"), 3)
         self.assertIn("Image-1", prompt)
         self.assertIn("保持不变", prompt)
+        self.assertIn("小图标", prompt)
+        self.assertIn("保持清晰锐利", prompt)
+
+    def test_does_not_expose_a_fake_text_negative_prompt(self) -> None:
+        conditioning = node_by_type(
+            self.workflow, "ComfyEasySenseNovaConditioning"
+        )
+
+        self.assertNotIn(
+            "negative_prompt",
+            {item["name"] for item in conditioning["inputs"]},
+        )
+
+    def test_output_resolution_follows_the_source_aspect_ratio(self) -> None:
+        load_image = node_by_type(self.workflow, "LoadImage")
+        resolution = node_by_type(
+            self.workflow, "ComfyEasySenseNovaEditResolution"
+        )
+        latent = node_by_type(self.workflow, "EmptyHiDreamO1LatentImage")
+
+        self.assertEqual(resolution["widgets_values"], [4.194304])
+        self.assertEqual(
+            source_node_for_input(self.workflow, resolution, "image")["id"],
+            load_image["id"],
+        )
+        width_link = link_for_input(self.workflow, latent, "width")
+        height_link = link_for_input(self.workflow, latent, "height")
+        self.assertEqual(width_link[1:3], [resolution["id"], 0])
+        self.assertEqual(height_link[1:3], [resolution["id"], 1])
 
     def test_native_edit_chain_is_fully_connected(self) -> None:
         conditioning = node_by_type(

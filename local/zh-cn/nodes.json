@@ -27,6 +27,17 @@
         "标注图像": {"display_name": "标注图像"}
       }
     },
+    "ComfyEasySenseNovaEditResolution": {
+      "display_name": "SenseNova 编辑分辨率",
+      "inputs": {
+        "image": {"display_name": "首张编辑图", "tooltip": "读取首张输入图的宽高比。"},
+        "target_megapixels": {"display_name": "目标百万像素", "tooltip": "保持原图宽高比，将总像素归一化到目标值并对齐到 32。"}
+      },
+      "outputs": {
+        "宽度": {"display_name": "宽度"},
+        "高度": {"display_name": "高度"}
+      }
+    },
     "ComfyEasySenseNovaDownloadModel": {
       "display_name": "SenseNova-U1 模型下载 (Legacy)",
       "inputs": {

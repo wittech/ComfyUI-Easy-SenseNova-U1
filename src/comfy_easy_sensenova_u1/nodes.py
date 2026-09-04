@@ -41,6 +41,7 @@ from .runtime import (
     generated_to_comfy,
     load_handle,
     metadata,
+    target_size_from_dimensions,
     target_size_for_edit,
     validate_size,
 )
@@ -604,6 +605,46 @@ class ComfyEasySenseNovaConditioning:
         )
 
 
+class ComfyEasySenseNovaEditResolution:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "image": (
+                    "IMAGE",
+                    ui(
+                        "首张编辑图",
+                        "读取首张输入图的宽高比，供 Empty HiDream O1 Latent Image 自动设置输出画布。",
+                    ),
+                ),
+                "target_megapixels": (
+                    "FLOAT",
+                    ui(
+                        "目标百万像素",
+                        "官方编辑默认约为 2048×2048 的总像素数；保持原图宽高比并对齐到 32。",
+                        default=4.194304,
+                        min=0.25,
+                        max=32.0,
+                        step=0.25,
+                    ),
+                ),
+            }
+        }
+
+    RETURN_TYPES = ("INT", "INT")
+    RETURN_NAMES = ("宽度", "高度")
+    FUNCTION = "calculate"
+    CATEGORY = NATIVE_CATEGORY
+    DESCRIPTION = "按官方图像编辑策略保持首张输入图宽高比，并把总像素归一化到目标值。"
+
+    def calculate(self, image: torch.Tensor, target_megapixels: float):
+        if image.ndim not in (3, 4):
+            raise ValueError(f"IMAGE 必须是 HWC 或 BHWC 张量，当前维度为 {image.ndim}。")
+        height = int(image.shape[-3])
+        width = int(image.shape[-2])
+        return target_size_from_dimensions(width, height, target_megapixels)
+
+
 class ComfyEasySenseNovaAnnotationCanvas:
     """加载图片，并把前端编辑器保存的透明标注层合成为单张参考图。"""
 
@@ -799,6 +840,7 @@ NODE_CLASS_MAPPINGS = {
     "ComfyEasySenseNovaLoader": ComfyEasySenseNovaLoader,
     "ComfyEasySenseNovaAnnotationCanvas": ComfyEasySenseNovaAnnotationCanvas,
     "ComfyEasySenseNovaConditioning": ComfyEasySenseNovaConditioning,
+    "ComfyEasySenseNovaEditResolution": ComfyEasySenseNovaEditResolution,
     "ComfyEasySenseNovaSamplingPatch": ComfyEasySenseNovaSamplingPatch,
     "ComfyEasySenseNovaScheduler": ComfyEasySenseNovaScheduler,
     "ComfyEasySenseNovaGuider": ComfyEasySenseNovaGuider,
@@ -816,6 +858,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ComfyEasySenseNovaLoader": "SenseNova Loader",
     "ComfyEasySenseNovaAnnotationCanvas": "SenseNova Annotation Canvas",
     "ComfyEasySenseNovaConditioning": "SenseNova Conditioning",
+    "ComfyEasySenseNovaEditResolution": "SenseNova Edit Resolution",
     "ComfyEasySenseNovaSamplingPatch": "SenseNova Sampling Patch",
     "ComfyEasySenseNovaScheduler": "SenseNova Scheduler",
     "ComfyEasySenseNovaGuider": "SenseNova Guider",

@@ -118,12 +118,14 @@ python tools/quantize_checkpoint.py \
 
 - `Sensenova 图像生成.json`：文生图，Loader → LoRA → Sampling Patch → Conditioning → CFGGuider → SamplerCustomAdvanced 的完整组合
 - `Sensenova 图像编辑.json`：图像编辑，用 DualGuider 做编辑引导，参考图从 LoadImage 进入
-- `SenseNova 图像编辑 50步原版.json`：类原生图像编辑链，`LoadImage → Conditioning.Image-1`，使用 Euler / 50 steps、shift 3、text CFG 4、image CFG 1、cfg norm `none`，不连接 LoRA
+- `SenseNova 图像编辑 50步原版.json`：类原生图像编辑链，`LoadImage → Conditioning.Image-1`；自动保持首张输入图宽高比并归一化到约 `2048²` 总像素，使用 Euler / 50 steps、shift 3、text CFG 4、image CFG 1、cfg norm `none`，默认关闭 think mode，不连接 LoRA
 - `SenseNova 引导式局部编辑.json`：用内置 `SenseNova Annotation Canvas` 上传主图并直接画框、圆圈、箭头、自由笔迹和文字，再把单张标注图送入 `Conditioning.Image-1`；旁边放置三个完整的 `PrimitiveStringMultiline` Prompt 模板。使用说明见 [`docs/guided-edit-workflow_CN.md`](docs/guided-edit-workflow_CN.md)
 
 打开方式：把 json 拖进 ComfyUI 画布，或 Workflow → Open 选文件。
 
 工作流引用了示例环境的模型文件，打开后按自己机器重新选择 CheckPoint；使用 8-step 工作流时还需重新选择加速 Lora。图像编辑工作流需要给 LoadImage 上传一张参考图。
+
+`SenseNova Conditioning` 的“无条件”输出是官方三分支 CFG 中的空文本分支，不是 Stable Diffusion 式的可填写负向提示词。原生编辑默认值 `text CFG = 4.0`、`image CFG = 1.0`；其中 `image CFG = 1.0` 表示不额外启用图像 CFG。需要保护未编辑的小图标、Logo 或小字时，优先保持输入宽高比、使用足够分辨率，并在完整编辑指令中明确列出必须保持不变的元素。
 
 ## 原项目
 

@@ -285,12 +285,29 @@ def validate_size(width: int, height: int) -> None:
         raise ValueError(f"宽和高必须为正数且能被 {GRID_SIZE} 整除，当前为 {width}x{height}。")
 
 
-def target_size_for_edit(image: Image.Image, megapixels: float) -> tuple[int, int]:
+def target_size_from_dimensions(width: int, height: int, megapixels: float) -> tuple[int, int]:
+    if width <= 0 or height <= 0:
+        raise ValueError(f"输入图像尺寸必须为正数，当前为 {width}x{height}。")
+    aspect_ratio = max(width, height) / min(width, height)
+    if aspect_ratio > 200:
+        raise ValueError(f"输入图像的绝对宽高比必须小于等于 200，当前为 {aspect_ratio:.2f}。")
+
     target = max(GRID_SIZE * GRID_SIZE, int(megapixels * 1_000_000))
-    scale = math.sqrt(target / max(1, image.width * image.height))
-    width = max(GRID_SIZE, round(image.width * scale / GRID_SIZE) * GRID_SIZE)
-    height = max(GRID_SIZE, round(image.height * scale / GRID_SIZE) * GRID_SIZE)
-    return width, height
+    target_width = max(GRID_SIZE, round(width / GRID_SIZE) * GRID_SIZE)
+    target_height = max(GRID_SIZE, round(height / GRID_SIZE) * GRID_SIZE)
+    if target_width * target_height > target:
+        scale = math.sqrt((width * height) / target)
+        target_width = max(GRID_SIZE, math.floor(width / scale / GRID_SIZE) * GRID_SIZE)
+        target_height = max(GRID_SIZE, math.floor(height / scale / GRID_SIZE) * GRID_SIZE)
+    elif target_width * target_height < target:
+        scale = math.sqrt(target / (width * height))
+        target_width = math.ceil(width * scale / GRID_SIZE) * GRID_SIZE
+        target_height = math.ceil(height * scale / GRID_SIZE) * GRID_SIZE
+    return target_width, target_height
+
+
+def target_size_for_edit(image: Image.Image, megapixels: float) -> tuple[int, int]:
+    return target_size_from_dimensions(image.width, image.height, megapixels)
 
 
 def metadata(handle: SenseNovaHandle, task: str, **values: Any) -> str:

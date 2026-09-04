@@ -1,8 +1,8 @@
 {
   "id": "fca63df2-5df5-4bc3-ab40-1d40145b58b9",
   "revision": 0,
-  "last_node_id": 13,
-  "last_link_id": 17,
+  "last_node_id": 14,
+  "last_link_id": 20,
   "nodes": [
     {
       "id": 1,
@@ -17,7 +17,7 @@
         {"name": "upload", "type": "IMAGEUPLOAD", "widget": {"name": "upload"}, "link": null}
       ],
       "outputs": [
-        {"name": "IMAGE", "type": "IMAGE", "links": [1]},
+        {"name": "IMAGE", "type": "IMAGE", "links": [1, 18]},
         {"name": "MASK", "type": "MASK", "links": null}
       ],
       "properties": {"Node name for S&R": "LoadImage"},
@@ -49,7 +49,7 @@
         "Node name for S&R": "PrimitiveStringMultiline"
       },
       "widgets_values": [
-        "请编辑 Image-1，并严格执行以下要求。\n\n编辑目标：\n【填写需要修改的对象、文字或区域，并说明它在画面中的位置】\n\n具体修改：\n【填写需要替换、添加、删除或调整的完整内容；可包括颜色、材质、形状、姿态、光影、文字和排版】\n\n效果要求：\n【填写修改后的目标视觉效果、风格以及必须满足的细节】\n\n只修改上述明确指定的内容。除编辑目标及其必要的自然融合区域外，保持【填写必须保持不变的主体身份、表情、姿势、其他文字、物体、背景、构图、镜头、透视和光照】不变，不得移动、重绘或重新设计未指定区域。新增或替换内容必须与原图的比例、材质、透视、光源、阴影、色调、清晰度和景深自然一致，不得出现拼贴边缘。若涉及文字，必须逐字使用【填写最终需要显示的完整文字，并按目标版式换行】，不得增删、翻译、改写或拼错，并保持指定的字体风格、颜色、层级和对齐方式。最终图中不要添加任何未要求的文字、水印、边框或标记。"
+        "请编辑 Image-1，并严格执行以下要求。\n\n编辑目标：\n【填写需要修改的对象、文字或区域，并说明它在画面中的位置】\n\n具体修改：\n【填写需要替换、添加、删除或调整的完整内容；可包括颜色、材质、形状、姿态、光影、文字和排版】\n\n效果要求：\n【填写修改后的目标视觉效果、风格以及必须满足的细节】\n\n只修改上述明确指定的内容。除编辑目标及其必要的自然融合区域外，保持【填写必须保持不变的主体身份、表情、姿势、其他文字、物体、背景、构图、镜头、透视和光照】不变，不得移动、重绘或重新设计未指定区域。特别是所有未指定的小图标、Logo、徽标、细线、边缘和小字号文字，必须保持原有形状、位置、尺寸、颜色、笔画和间距，保持清晰锐利，不得模糊、重绘、变形、替换、移动或遗漏。新增或替换内容必须与原图的比例、材质、透视、光源、阴影、色调、清晰度和景深自然一致，不得出现拼贴边缘。若涉及文字，必须逐字使用【填写最终需要显示的完整文字，并按目标版式换行】，不得增删、翻译、改写或拼错，并保持指定的字体风格、颜色、层级和对齐方式。最终图中不要添加任何未要求的文字、水印、边框或标记。"
       ],
       "color": "#323",
       "bgcolor": "#535"
@@ -87,7 +87,7 @@
       "pos": [1190, 80],
       "size": [390, 500],
       "flags": {},
-      "order": 7,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {"name": "model", "type": "MODEL", "link": 3},
@@ -103,7 +103,7 @@
         {"name": "条件状态", "type": "SENSENOVA_CONDITION_STATE", "links": null}
       ],
       "properties": {"Node name for S&R": "ComfyEasySenseNovaConditioning"},
-      "widgets_values": ["", true, 1024]
+      "widgets_values": ["", false, 1024]
     },
     {
       "id": 5,
@@ -111,7 +111,7 @@
       "pos": [1640, 650],
       "size": [330, 220],
       "flags": {},
-      "order": 8,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {"name": "model", "type": "MODEL", "link": 4},
@@ -149,7 +149,7 @@
       "pos": [1640, 210],
       "size": [330, 250],
       "flags": {},
-      "order": 9,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {"name": "model", "type": "MODEL", "link": 8},
@@ -207,11 +207,11 @@
       "pos": [2020, 780],
       "size": [270, 120],
       "flags": {},
-      "order": 6,
+      "order": 7,
       "mode": 0,
       "inputs": [
-        {"name": "width", "type": "INT", "widget": {"name": "width"}, "link": null},
-        {"name": "height", "type": "INT", "widget": {"name": "height"}, "link": null},
+        {"name": "width", "type": "INT", "widget": {"name": "width"}, "link": 19},
+        {"name": "height", "type": "INT", "widget": {"name": "height"}, "link": 20},
         {"name": "batch_size", "type": "INT", "widget": {"name": "batch_size"}, "link": null}
       ],
       "outputs": [
@@ -221,12 +221,32 @@
       "widgets_values": [2048, 2048, 1]
     },
     {
+      "id": 14,
+      "type": "ComfyEasySenseNovaEditResolution",
+      "pos": [1640, 780],
+      "size": [330, 110],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {"name": "image", "type": "IMAGE", "link": 18},
+        {"name": "target_megapixels", "type": "FLOAT", "widget": {"name": "target_megapixels"}, "link": null}
+      ],
+      "outputs": [
+        {"name": "宽度", "type": "INT", "links": [19]},
+        {"name": "高度", "type": "INT", "links": [20]}
+      ],
+      "title": "按输入图比例自动设置输出分辨率",
+      "properties": {"Node name for S&R": "ComfyEasySenseNovaEditResolution"},
+      "widgets_values": [4.194304]
+    },
+    {
       "id": 11,
       "type": "SamplerCustomAdvanced",
       "pos": [2040, 180],
       "size": [280, 360],
       "flags": {},
-      "order": 10,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {"name": "noise", "type": "NOISE", "link": 9},
@@ -247,7 +267,7 @@
       "pos": [2400, 260],
       "size": [240, 80],
       "flags": {},
-      "order": 11,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {"name": "samples", "type": "LATENT", "link": 16},
@@ -264,7 +284,7 @@
       "pos": [2700, 80],
       "size": [520, 560],
       "flags": {},
-      "order": 12,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {"name": "images", "type": "IMAGE", "link": 17},
@@ -294,7 +314,10 @@
     [14, 10, 0, 11, 4, "LATENT"],
     [15, 3, 1, 12, 1, "VAE"],
     [16, 11, 0, 12, 0, "LATENT"],
-    [17, 12, 0, 13, 0, "IMAGE"]
+    [17, 12, 0, 13, 0, "IMAGE"],
+    [18, 1, 0, 14, 0, "IMAGE"],
+    [19, 14, 0, 10, 0, "INT"],
+    [20, 14, 1, 10, 1, "INT"]
   ],
   "groups": [
     {
