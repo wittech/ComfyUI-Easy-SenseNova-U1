@@ -106,6 +106,26 @@ python tools/quantize_checkpoint.py \
 
 ## 跑起来
 
+### U1.5 8step V2
+
+推荐先打开 `workflows/SenseNova V2 8步图像编辑 4MP.json` 或
+`workflows/SenseNova V2 8步图像生成.json`。使用正式版
+`SenseNova-U1.5-8B-MoT` 底模（不是 Preview），将官方
+`SenseNova-U1.5-8B-MoT-LoRA-8step-V2.safetensors` 放入
+`ComfyUI/models/loras/`，在 **SenseNova LoRA Loader** 选择该文件，
+无需预先转换键名。已转换的 Comfy LoRA 文件也兼容。Loader 选 `full`。
+
+V2 参数：LoRA 强度 `1.0`、Euler、`8` 步、text/image CFG 都为 `1.0`、
+shift `3.0`、CFG norm `none`。新工作流默认关闭 Think Mode 并固定种子，
+便于对照；需要思考时可再开启。新 LoRA 节点检查所有 down/up 配对、
+形状和实际应用的补丁数量，加载后在控制台打印匹配层数（官方 V2 为 294）。
+
+图像编辑通过 **SenseNova Edit Resolution** 保持首张原图比例。4MP 版以
+`2048²` 为像素预算，16:9 输入约输出 `2752×1536`；4K 版预算为
+`4096×2304`，其他比例按同样总像素计算。4K 需要更多显存。
+提示词中的“4K”不能替代输出尺寸设置。详细适配与对照说明见
+[`docs/v2-upgrade_CN.md`](docs/v2-upgrade_CN.md)。
+
 1. 模型下载节点拉模型（或按上文转换）
 2. 模型加载节点读 checkpoint，显存模式按卡选：显存够用 `full`，24GB 左右 `balanced`，紧张用 `low`
 3. 加载节点的 `MODEL` / `VAE` 输出接文生图节点，或接类原生节点自由组合

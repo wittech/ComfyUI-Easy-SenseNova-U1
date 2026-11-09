@@ -634,20 +634,31 @@ class SenseNovaDualGuider(comfy.samplers.CFGGuider):
         self.image_cfg = image_cfg
 
     def predict_noise(self, x, timestep, model_options={}, seed=None):
+        settings = model_options.get("sensenova_guidance", {})
+        native_t = 1.0 - float(timestep.flatten()[0])
+        use_cfg = settings.get("interval_start", 0.0) <= native_t <= settings.get("interval_end", 1.0)
+        needs_cfg = use_cfg and (self.text_cfg != 1 or self.image_cfg != 1)
+        needs_middle = needs_cfg and (self.image_cfg == 1 or self.text_cfg != self.image_cfg)
+        needs_negative = needs_cfg and self.image_cfg != 1
         out = comfy.samplers.calc_cond_batch(
             self.inner_model,
-            [self.conds["negative"], self.conds["middle"], self.conds["positive"]],
+            [self.conds["negative"] if needs_negative else None,
+             self.conds["middle"] if needs_middle else None,
+             self.conds["positive"]],
             x,
             timestep,
             model_options,
         )
-        settings = model_options.get("sensenova_guidance", {})
-        native_t = 1.0 - float(timestep.flatten()[0])
-        if native_t < settings.get("interval_start", 0.0) or native_t > settings.get("interval_end", 1.0):
+        if not needs_cfg:
             return out[2]
 
-        # Exact upstream edit rule: uncond + text*(positive-image) + image*(image-uncond).
-        guided = out[0] + self.text_cfg * (out[2] - out[1]) + self.image_cfg * (out[1] - out[0])
+        # Follow upstream's branch shortcuts, including its CFG=1 fast path.
+        if self.image_cfg == 1:
+            guided = out[1] + self.text_cfg * (out[2] - out[1])
+        elif self.text_cfg == self.image_cfg:
+            guided = out[0] + self.text_cfg * (out[2] - out[0])
+        else:
+            guided = out[0] + self.text_cfg * (out[2] - out[1]) + self.image_cfg * (out[1] - out[0])
         cfg_norm = settings.get("cfg_norm", "none")
         if cfg_norm in ("global", "channel") and (self.text_cfg > 1 or self.image_cfg > 1):
             backend = self.model_patcher.model.diffusion_model

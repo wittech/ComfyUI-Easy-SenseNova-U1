@@ -17,6 +17,13 @@
     "height": {"display_name": "图像高度", "tooltip": "自由设置图像高度，必须为 32 的倍数。"}
   },
   "nodes": {
+    "ComfyEasySenseNovaLoraLoader": {
+      "display_name": "SenseNova LoRA 加载",
+      "inputs": {
+        "lora_name": {"display_name": "LoRA 文件", "tooltip": "支持官方 V2 原文件和转换后的 Comfy 文件，放入 models/loras。"},
+        "strength_model": {"display_name": "LoRA 强度", "tooltip": "8 步 V2 使用 1.0；须搭配正式版 U1.5 底模和 full 模式。"}
+      }
+    },
     "ComfyEasySenseNovaAnnotationCanvas": {
       "display_name": "SenseNova 标注画布",
       "inputs": {

@@ -16,6 +16,7 @@ import comfy.model_management as mm
 import folder_paths
 
 from .annotation_canvas import compose_annotation
+from .lora_keys import prepare_lora
 from .checkpoint_assets import ASSETS_FORMAT, ASSETS_FORMAT_KEY
 from .download import FILE_VERIFICATIONS, OFFICIAL_REPOS, download_snapshot
 from .paths import available_models, resolve_model_path
@@ -553,6 +554,50 @@ class ComfyEasySenseNovaLoader:
         return patcher, make_pixel_vae(), json.dumps(info, ensure_ascii=False, indent=2)
 
 
+class ComfyEasySenseNovaLoraLoader:
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {
+            "model": ("MODEL",),
+            "lora_name": (folder_paths.get_filename_list("loras"),),
+            "strength_model": ("FLOAT", ui("LoRA 强度", "8step V2 使用 1.0；自动识别官方原文件和已转换的 Comfy 文件。", default=1.0, min=-10.0, max=10.0, step=0.05)),
+        }}
+
+    RETURN_TYPES = ("MODEL", "STRING")
+    RETURN_NAMES = ("MODEL", "LoRA 加载信息")
+    FUNCTION = "load_lora"
+    CATEGORY = NATIVE_CATEGORY
+    DESCRIPTION = "直接加载官方 SenseNova LoRA（含 8step V2），验证所有目标、形状及补丁数量；使用 full 显存模式。"
+
+    def load_lora(self, model, lora_name, strength_model):
+        import comfy.lora
+        import comfy.utils
+
+        if not isinstance(model.model, SenseNovaComfyModel):
+            raise TypeError("SenseNova LoRA Loader 只能连接 SenseNova Loader。")
+        if strength_model == 0:
+            return model, "LoRA 强度为 0，未加载。"
+        if model.model.handle.prefetch_count > 0:
+            raise ValueError("SenseNova LoRA 当前要求 Loader 的 vram_mode=full。")
+        if "u1.5" in lora_name.lower() and "preview" in model.model.handle.model_path.lower():
+            raise ValueError("U1.5 LoRA 不兼容 Preview 底模，请使用正式版 SenseNova-U1.5-8B-MoT。")
+        path = folder_paths.get_full_path_or_raise("loras", lora_name)
+        state = comfy.utils.load_torch_file(path, safe_load=True)
+        shapes = {name: param.shape for name, param in model.model.named_parameters()}
+        normalized, targets = prepare_lora(state, shapes)
+        patches = comfy.lora.load_lora(normalized, targets)
+        if set(patches) != set(targets.values()):
+            raise RuntimeError("ComfyUI 未解析全部 SenseNova LoRA 目标，请检查 ComfyUI 版本。")
+        patched = model.clone()
+        applied = patched.add_patches(patches, strength_model)
+        if set(applied) != set(patches):
+            raise RuntimeError("SenseNova LoRA 未能完整应用，已停止采样。")
+        info = json.dumps({"lora": lora_name, "matched_layers": len(applied),
+                           "strength": strength_model, "tensor_count": len(normalized)}, ensure_ascii=False)
+        print(f"[SenseNova LoRA] {info}", flush=True)
+        return patched, info
+
+
 class ComfyEasySenseNovaConditioning:
     @classmethod
     def INPUT_TYPES(cls):
@@ -838,6 +883,7 @@ NODE_CLASS_MAPPINGS = {
     "ComfyEasySenseNovaVisionQA": ComfyEasySenseNovaVisionQA,
     "ComfyEasySenseNovaInterleave": ComfyEasySenseNovaInterleave,
     "ComfyEasySenseNovaLoader": ComfyEasySenseNovaLoader,
+    "ComfyEasySenseNovaLoraLoader": ComfyEasySenseNovaLoraLoader,
     "ComfyEasySenseNovaAnnotationCanvas": ComfyEasySenseNovaAnnotationCanvas,
     "ComfyEasySenseNovaConditioning": ComfyEasySenseNovaConditioning,
     "ComfyEasySenseNovaEditResolution": ComfyEasySenseNovaEditResolution,
@@ -856,6 +902,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "ComfyEasySenseNovaVisionQA": "SenseNova-U1 视觉问答 (Legacy)",
     "ComfyEasySenseNovaInterleave": "SenseNova-U1 图文交错生成 (Legacy)",
     "ComfyEasySenseNovaLoader": "SenseNova Loader",
+    "ComfyEasySenseNovaLoraLoader": "SenseNova LoRA Loader",
     "ComfyEasySenseNovaAnnotationCanvas": "SenseNova Annotation Canvas",
     "ComfyEasySenseNovaConditioning": "SenseNova Conditioning",
     "ComfyEasySenseNovaEditResolution": "SenseNova Edit Resolution",

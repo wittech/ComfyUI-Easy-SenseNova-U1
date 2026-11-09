@@ -1,0 +1,922 @@
+{
+  "id": "4209511c-4b80-48ea-989f-434fa5ac6fdc",
+  "revision": 0,
+  "last_node_id": 15,
+  "last_link_id": 17,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        420,
+        80
+      ],
+      "size": [
+        700,
+        500
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "title": "完整图像编辑提示词（填写占位内容）",
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.22.0",
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65,
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "日出时的高山湖泊，写实摄影，自然光照，真实材质与清晰细节。"
+      ],
+      "color": "#323",
+      "bgcolor": "#535"
+    },
+    {
+      "id": 3,
+      "type": "ComfyEasySenseNovaLoader",
+      "pos": [
+        1190,
+        650
+      ],
+      "size": [
+        420,
+        220
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "checkpoint_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "checkpoint_name"
+          },
+          "link": null
+        },
+        {
+          "name": "attention_backend",
+          "type": "COMBO",
+          "widget": {
+            "name": "attention_backend"
+          },
+          "link": null
+        },
+        {
+          "name": "vram_mode",
+          "type": "COMBO",
+          "widget": {
+            "name": "vram_mode"
+          },
+          "link": null
+        },
+        {
+          "name": "reload_model",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "reload_model"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            2,
+            17
+          ]
+        },
+        {
+          "name": "像素空间 VAE",
+          "type": "VAE",
+          "links": [
+            14
+          ]
+        },
+        {
+          "name": "模型信息",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyEasySenseNovaLoader"
+      },
+      "widgets_values": [
+        "SenseNova-U1.5-8B/SenseNova-U1.5-8B-MoT_bf16_commfy.safetensors",
+        "auto",
+        "full",
+        false
+      ]
+    },
+    {
+      "id": 4,
+      "type": "ComfyEasySenseNovaConditioning",
+      "pos": [
+        1190,
+        80
+      ],
+      "size": [
+        390,
+        500
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 2
+        },
+        {
+          "name": "Image-1",
+          "type": "IMAGE",
+          "shape": 7,
+          "link": null
+        },
+        {
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 1
+        },
+        {
+          "name": "think_mode",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "think_mode"
+          },
+          "link": null
+        },
+        {
+          "name": "max_think_tokens",
+          "type": "INT",
+          "widget": {
+            "name": "max_think_tokens"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "正面条件",
+          "type": "CONDITIONING",
+          "links": [
+            4
+          ]
+        },
+        {
+          "name": "仅图像条件",
+          "type": "CONDITIONING",
+          "links": [
+            5
+          ]
+        },
+        {
+          "name": "无条件",
+          "type": "CONDITIONING",
+          "links": [
+            6
+          ]
+        },
+        {
+          "name": "条件状态",
+          "type": "SENSENOVA_CONDITION_STATE",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyEasySenseNovaConditioning"
+      },
+      "widgets_values": [
+        "",
+        false,
+        1024
+      ]
+    },
+    {
+      "id": 5,
+      "type": "ComfyEasySenseNovaSamplingPatch",
+      "pos": [
+        1640,
+        650
+      ],
+      "size": [
+        330,
+        220
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 3
+        },
+        {
+          "name": "timestep_shift",
+          "type": "FLOAT",
+          "widget": {
+            "name": "timestep_shift"
+          },
+          "link": null
+        },
+        {
+          "name": "cfg_norm",
+          "type": "COMBO",
+          "widget": {
+            "name": "cfg_norm"
+          },
+          "link": null
+        },
+        {
+          "name": "cfg_interval_start",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg_interval_start"
+          },
+          "link": null
+        },
+        {
+          "name": "cfg_interval_end",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg_interval_end"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyEasySenseNovaSamplingPatch"
+      },
+      "widgets_values": [
+        3.0,
+        "none",
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "id": 6,
+      "type": "RandomNoise",
+      "pos": [
+        1640,
+        80
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise_seed",
+          "type": "INT",
+          "widget": {
+            "name": "noise_seed"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "NOISE",
+          "type": "NOISE",
+          "links": [
+            8,
+            9
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "RandomNoise"
+      },
+      "widgets_values": [
+        744571600207914,
+        "fixed"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "ComfyEasySenseNovaDualGuider",
+      "pos": [
+        1640,
+        210
+      ],
+      "size": [
+        330,
+        250
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 7
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 4
+        },
+        {
+          "name": "image_condition",
+          "type": "CONDITIONING",
+          "link": 5
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 6
+        },
+        {
+          "name": "thinking_noise",
+          "type": "NOISE",
+          "shape": 7,
+          "link": 9
+        },
+        {
+          "name": "text_cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "text_cfg"
+          },
+          "link": null
+        },
+        {
+          "name": "image_cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "image_cfg"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "GUIDER",
+          "type": "GUIDER",
+          "links": [
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyEasySenseNovaDualGuider"
+      },
+      "widgets_values": [
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "id": 8,
+      "type": "KSamplerSelect",
+      "pos": [
+        1640,
+        510
+      ],
+      "size": [
+        270,
+        62
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "euler"
+      ]
+    },
+    {
+      "id": 9,
+      "type": "ComfyEasySenseNovaScheduler",
+      "pos": [
+        2020,
+        610
+      ],
+      "size": [
+        270,
+        130
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "name": "timestep_shift",
+          "type": "FLOAT",
+          "widget": {
+            "name": "timestep_shift"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SIGMAS",
+          "type": "SIGMAS",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyEasySenseNovaScheduler"
+      },
+      "widgets_values": [
+        8,
+        3.0
+      ]
+    },
+    {
+      "id": 10,
+      "type": "EmptyHiDreamO1LatentImage",
+      "pos": [
+        2020,
+        780
+      ],
+      "size": [
+        270,
+        120
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "name": "batch_size",
+          "type": "INT",
+          "widget": {
+            "name": "batch_size"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "EmptyHiDreamO1LatentImage"
+      },
+      "widgets_values": [
+        2048,
+        2048,
+        1
+      ]
+    },
+    {
+      "id": 11,
+      "type": "SamplerCustomAdvanced",
+      "pos": [
+        2040,
+        180
+      ],
+      "size": [
+        280,
+        360
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "noise",
+          "type": "NOISE",
+          "link": 8
+        },
+        {
+          "name": "guider",
+          "type": "GUIDER",
+          "link": 10
+        },
+        {
+          "name": "sampler",
+          "type": "SAMPLER",
+          "link": 11
+        },
+        {
+          "name": "sigmas",
+          "type": "SIGMAS",
+          "link": 12
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 13
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output",
+          "type": "LATENT",
+          "links": [
+            15
+          ]
+        },
+        {
+          "name": "denoised_output",
+          "type": "LATENT",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SamplerCustomAdvanced"
+      }
+    },
+    {
+      "id": 12,
+      "type": "VAEDecode",
+      "pos": [
+        2400,
+        260
+      ],
+      "size": [
+        240,
+        80
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 15
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            16
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 13,
+      "type": "SaveImage",
+      "pos": [
+        2700,
+        80
+      ],
+      "size": [
+        520,
+        560
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 16
+        },
+        {
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "SenseNova/V2_8step"
+      ]
+    },
+    {
+      "id": 15,
+      "type": "ComfyEasySenseNovaLoraLoader",
+      "pos": [
+        1640,
+        1050
+      ],
+      "size": [
+        420,
+        140
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            3
+          ]
+        },
+        {
+          "name": "LoRA 加载信息",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ComfyEasySenseNovaLoraLoader"
+      },
+      "widgets_values": [
+        "SenseNova-U1.5-8B-MoT-LoRA-8step-V2.safetensors",
+        1.0
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      4,
+      2,
+      "STRING"
+    ],
+    [
+      2,
+      3,
+      0,
+      4,
+      0,
+      "MODEL"
+    ],
+    [
+      3,
+      15,
+      0,
+      5,
+      0,
+      "MODEL"
+    ],
+    [
+      4,
+      4,
+      0,
+      7,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      5,
+      4,
+      1,
+      7,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      6,
+      4,
+      2,
+      7,
+      3,
+      "CONDITIONING"
+    ],
+    [
+      7,
+      5,
+      0,
+      7,
+      0,
+      "MODEL"
+    ],
+    [
+      8,
+      6,
+      0,
+      11,
+      0,
+      "NOISE"
+    ],
+    [
+      9,
+      6,
+      0,
+      7,
+      4,
+      "NOISE"
+    ],
+    [
+      10,
+      7,
+      0,
+      11,
+      1,
+      "GUIDER"
+    ],
+    [
+      11,
+      8,
+      0,
+      11,
+      2,
+      "SAMPLER"
+    ],
+    [
+      12,
+      9,
+      0,
+      11,
+      3,
+      "SIGMAS"
+    ],
+    [
+      13,
+      10,
+      0,
+      11,
+      4,
+      "LATENT"
+    ],
+    [
+      14,
+      3,
+      1,
+      12,
+      1,
+      "VAE"
+    ],
+    [
+      15,
+      11,
+      0,
+      12,
+      0,
+      "LATENT"
+    ],
+    [
+      16,
+      12,
+      0,
+      13,
+      0,
+      "IMAGE"
+    ],
+    [
+      17,
+      3,
+      0,
+      15,
+      0,
+      "MODEL"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "1. 上传 Image-1 并填写完整编辑要求",
+      "bounding": [
+        0,
+        20,
+        1140,
+        590
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "2. U1.5 正式版 + V2 LoRA / 8步 / CFG 1 / full",
+      "bounding": [
+        1160,
+        20,
+        2090,
+        920
+      ],
+      "color": "#4f7c59",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.72,
+      "offset": [
+        60,
+        60
+      ]
+    },
+    "sensenova_v2": {
+      "base": "sensenova/SenseNova-U1.5-8B-MoT",
+      "lora": "SenseNova-U1.5-8B-MoT-LoRA-8step-V2.safetensors",
+      "megapixels": 4.194304,
+      "think_mode": false
+    }
+  },
+  "version": 0.4
+}
